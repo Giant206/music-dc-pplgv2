@@ -342,6 +342,155 @@ async function handleButtonInteraction(client, interaction) {
       return interaction.reply({ content: `📡 Ping: ${ping}ms`, ephemeral: true });
     }
 
+    // ============================================
+    // 🔊 VOLUME BUTTONS
+    // ============================================
+    if (action === "volume") {
+      if (!player || !player.current) {
+        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", ephemeral: true });
+      }
+
+      let newVolume = player.volume || 100;
+
+      if (type === "up") {
+        newVolume = Math.min(200, newVolume + 10);
+      } else if (type === "down") {
+        newVolume = Math.max(0, newVolume - 10);
+      } else if (type === "mute") {
+        newVolume = player.volume === 0 ? (player.previousVolume || 100) : 0;
+      } else if (type === "max") {
+        newVolume = 200;
+      } else if (type === "50") {
+        newVolume = 50;
+      }
+
+      player.previousVolume = player.volume;
+      player.setVolume(newVolume);
+
+      return interaction.reply({ 
+        content: `🔊 Volume: ${newVolume}%`, 
+        ephemeral: true 
+      });
+    }
+
+    // ============================================
+    // ♾️ AUTOPLAY BUTTON
+    // ============================================
+    if (action === "music" && type === "autoplay") {
+      if (!player) {
+        return interaction.reply({ content: "❌ Tidak ada player aktif.", ephemeral: true });
+      }
+
+      const newAutoplay = !player.isAutoplay;
+      player.isAutoplay = newAutoplay;
+
+      if (newAutoplay && typeof player.autoplay === "function") {
+        player.autoplay(player);
+      }
+
+      return interaction.reply({ 
+        content: newAutoplay ? "✅ Autoplay diaktifkan!" : "❌ Autoplay dinonaktifkan!" 
+      });
+    }
+
+    // ============================================
+    // ♾️ AUTOPLAY TOGGLE BUTTON (from autoplay command)
+    // ============================================
+    if (action === "autoplay" && type === "toggle") {
+      if (!player) {
+        return interaction.reply({ content: "❌ Tidak ada player aktif.", ephemeral: true });
+      }
+
+      player.isAutoplay = !player.isAutoplay;
+
+      if (player.isAutoplay && typeof player.autoplay === "function") {
+        player.autoplay(player);
+      }
+
+      return interaction.reply({ 
+        content: player.isAutoplay ? "✅ Autoplay diaktifkan!" : "❌ Autoplay dinonaktifkan!" 
+      });
+    }
+
+    // ============================================
+    // 📋 QUEUE PAGINATION BUTTONS
+    // ============================================
+    if (action === "queue") {
+      if (!player || !player.current) {
+        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", ephemeral: true });
+      }
+
+      if (type === "shuffle") {
+        if (player.queue.length < 2) {
+          return interaction.reply({ content: "❌ Antrian terlalu pendek.", ephemeral: true });
+        }
+        const current = player.queue.shift();
+        for (let i = player.queue.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [player.queue[i], player.queue[j]] = [player.queue[j], player.queue[i]];
+        }
+        player.queue.unshift(current);
+        return interaction.reply({ content: "🔀 Antrian diacak!" });
+      }
+
+      if (type === "clear") {
+        player.queue.clear();
+        return interaction.reply({ content: "🗑️ Antrian dikosongkan!" });
+      }
+
+      // prev, next, page buttons - handled by command collectors
+      return interaction.reply({ content: "📋 Gunakan command `/queue` untuk melihat antrian.", ephemeral: true });
+    }
+
+    // ============================================
+    // 🎛️ FILTER CLEAR BUTTON
+    // ============================================
+    if (action === "filter" && type === "clear") {
+      if (!player || !player.current) {
+        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", ephemeral: true });
+      }
+
+      if (player.filters) {
+        player.filters = { bassboost: false, nightcore: false, vaporwave: false };
+      }
+      
+      if (player.resetFilter) {
+        player.resetFilter();
+      }
+
+      return interaction.reply({ content: "🎛️ Semua filter dihapus!" });
+    }
+
+    // ============================================
+    // 🔌 LEAVE CONFIRM/CANCEL BUTTONS
+    // ============================================
+    if (action === "leave") {
+      if (type === "confirm") {
+        if (player) {
+          player.destroy();
+        }
+        return interaction.reply({ content: "👋 Bot telah keluar dari voice channel!" });
+      } else if (type === "cancel") {
+        return interaction.reply({ content: "❌ Aksi dibatalkan.", ephemeral: true });
+      }
+    }
+
+    // ============================================
+    // 🎵 MUSIC PLAY/JOIN BUTTONS (After stop/leave)
+    // ============================================
+    if (action === "music" && (type === "play" || type === "join")) {
+      return interaction.reply({ content: "🔊 Gunakan command `/join` untuk masuk ke voice channel, lalu `/play` untuk memutar musik." });
+    }
+
+    // ============================================
+    // 🔍 PLAY SEARCH BUTTONS (Search results)
+    // ============================================
+    if (action === "play") {
+      // Search results are handled by the play command
+      // This requires access to search results stored in memory
+      return interaction.reply({ content: "🔍 Silakan gunakan command `/play` untuk mencari lagu.", ephemeral: true });
+    }
+
   } catch (error) {
     logger.error(`Button interaction error: ${error.message}`);
     return interaction.reply({ content: "❌ Terjadi error.", ephemeral: true });
