@@ -1,0 +1,28 @@
+{
+  "name": "pplgbot",
+  "description": "PPLGBot - Discord Music Bot with Modern UI",
+  "version": "2.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.21.0",
+    "dotenv": "^17.3.1",
+    "genius-lyrics-api": "^3.2.1",
+    "pretty-ms": "^9.2.0",
+    "riffy": "^1.0.12"
+  },
+  "keywords": [
+    "discord",
+    "music",
+    "bot",
+    "riffy",
+    "lavalink",
+    "discord-music-bot"
+  ],
+  "author": "PPLGBot Team",
+  "license": "MIT"
+}
+
