@@ -42,7 +42,7 @@ module.exports = (client) => {
         console.error(`❌ Command not found: ${interaction.commandName}`);
         return interaction.reply({
           content: `Command \`${interaction.commandName}\` tidak ditemukan.`,
-          ephemeral: true,
+          flags: 64,
         });
       }
 
@@ -51,7 +51,7 @@ module.exports = (client) => {
         console.error(`❌ Command ${interaction.commandName} missing run function`);
         return interaction.reply({
           content: `Command \`${interaction.commandName}\` rusak.`,
-          ephemeral: true,
+          flags: 64,
         });
       }
 
@@ -66,7 +66,7 @@ module.exports = (client) => {
       if (!command) {
         return interaction.reply({
           content: `Command \`${interaction.commandName}\` tidak ditemukan.`,
-          ephemeral: true,
+          flags: 64,
         });
       }
 
@@ -78,7 +78,7 @@ module.exports = (client) => {
         if (!owners.includes(interaction.user.id)) {
           return interaction.reply({
             content: "❌ Command ini hanya untuk owner bot.",
-            ephemeral: true,
+            flags: 64,
           });
         }
       }
@@ -91,7 +91,7 @@ module.exports = (client) => {
         if (!perms?.has(PermissionsBitField.resolve(command.userPermissions || []))) {
           return interaction.reply({
             content: `❌ Kamu membutuhkan izin: ${command.userPermissions.join(", ")}`,
-            ephemeral: true,
+            flags: 64,
           });
         }
       }
@@ -104,7 +104,7 @@ module.exports = (client) => {
         if (!perms?.has(PermissionsBitField.resolve(command.clientPermissions || []))) {
           return interaction.reply({
             content: `❌ Bot membutuhkan izin: ${command.clientPermissions.join(", ")}`,
-            ephemeral: true,
+            flags: 64,
           });
         }
       }
@@ -115,7 +115,7 @@ module.exports = (client) => {
       if (command.inVoice && !memberChannel) {
         return interaction.reply({
           content: "❌ Kamu harus berada di voice channel untuk menggunakan command ini.",
-          ephemeral: true,
+          flags: 64,
         });
       }
 
@@ -125,7 +125,7 @@ module.exports = (client) => {
       if (command.sameVoice && memberChannel !== clientChannel) {
         return interaction.reply({
           content: "❌ Kamu harus berada di voice channel yang sama dengan bot.",
-          ephemeral: true,
+          flags: 64,
         });
       }
 
@@ -135,7 +135,7 @@ module.exports = (client) => {
       if (command.player && !player) {
         return interaction.reply({
           content: "❌ Tidak ada musik yang sedang diputar.",
-          ephemeral: true,
+          flags: 64,
         });
       }
 
@@ -145,7 +145,7 @@ module.exports = (client) => {
       if (command.current && (!player || !player.current)) {
         return interaction.reply({
           content: "❌ Tidak ada lagu yang sedang diputar.",
-          ephemeral: true,
+          flags: 64,
         });
       }
 
@@ -167,7 +167,7 @@ module.exports = (client) => {
           const timeLeft = (expirationTime - now) / 1000;
           return interaction.reply({
             content: `⏳ Harap tunggu ${timeLeft.toFixed(1)} detik lagi.`,
-            ephemeral: true,
+            flags: 64,
           });
         }
       }
@@ -184,18 +184,37 @@ module.exports = (client) => {
       logger.cmd(command.name, interaction.user.tag, interaction.guild?.name || "DM");
 
     } catch (err) {
-      logger.error(`Error saat menjalankan command ${interaction.commandName}: ${err.message}`);
+      // Check if interaction was already replied/deferred before trying to respond
+      if (interaction.replied) {
+        // Interaction already replied, try followUp
+        try {
+          return await interaction.followUp({
+            content: `❌ Terjadi error: ${err.message}`,
+            flags: 64
+          });
+        } catch (followUpErr) {
+          console.error("Failed to send followUp:", followUpErr.message);
+          return;
+        }
+      }
       
-      if (interaction.replied || interaction.deferred) {
-        return interaction.followUp({
-          content: `❌ Terjadi error: ${err.message}`,
-          ephemeral: true,
-        });
+      if (interaction.deferred) {
+        // Interaction was deferred, use followUp
+        try {
+          return await interaction.followUp({
+            content: `❌ Terjadi error: ${err.message}`,
+            flags: 64
+          });
+        } catch (followUpErr) {
+          console.error("Failed to send followUp:", followUpErrErr.message);
+          return;
+        }
       }
 
+      // Not yet replied, use reply
       return interaction.reply({
         content: `❌ Terjadi error: ${err.message}`,
-        ephemeral: true,
+        flags: 64
       });
     }
   });
@@ -219,7 +238,7 @@ async function handleButtonInteraction(client, interaction) {
     // Pause/Resume
     if (action === "music" && (type === "pause" || type === "resume")) {
       if (!player || !player.current) {
-        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", ephemeral: true });
+        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", flags: 64 });
       }
 
       if (player.paused) {
@@ -240,7 +259,7 @@ async function handleButtonInteraction(client, interaction) {
     // Stop
     if (action === "music" && type === "stop") {
       if (!player) {
-        return interaction.reply({ content: "❌ Tidak ada player aktif.", ephemeral: true });
+        return interaction.reply({ content: "❌ Tidak ada player aktif.", flags: 64 });
       }
       player.destroy();
       return interaction.reply({ content: "⏹️ Music stopped and disconnected!" });
@@ -249,7 +268,7 @@ async function handleButtonInteraction(client, interaction) {
     // Skip
     if (action === "music" && type === "skip") {
       if (!player || !player.current) {
-        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", ephemeral: true });
+        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", flags: 64 });
       }
       player.stop();
       return interaction.reply({ content: "⏭️ Skipped to next track!" });
@@ -276,7 +295,7 @@ async function handleButtonInteraction(client, interaction) {
     // Filter buttons
     if (action === "filter") {
       if (!player || !player.current) {
-        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", ephemeral: true });
+        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", flags: 64 });
       }
 
       // Initialize filters
@@ -294,8 +313,9 @@ async function handleButtonInteraction(client, interaction) {
 
     // Shuffle
     if (action === "shuffle" && type === "again") {
-      if (!player || player.queue.length < 2) {
-        return interaction.reply({ content: "❌ Antrian terlalu pendek.", ephemeral: true });
+      const queueArr = Array.from(player.queue || []);
+      if (!player || queueArr.length < 2) {
+        return interaction.reply({ content: "❌ Antrian terlalu pendek.", flags: 64 });
       }
 
       // Fisher-Yates shuffle
@@ -320,26 +340,26 @@ async function handleButtonInteraction(client, interaction) {
       
       if (customId === "247_off") {
         await db.set247Mode(guildId, { enabled: false });
-        return interaction.reply({ content: "⏹️ Mode 247 dinonaktifkan!", ephemeral: true });
+        return interaction.reply({ content: "⏹️ Mode 247 dinonaktifkan!", flags: 64 });
       }
       
       if (customId === "247_status") {
         return interaction.reply({ 
           content: mode247 && mode247.enabled ? "✅ Mode 247 AKTIF" : "❌ Mode 247 NONAKTIF", 
-          ephemeral: true 
+          flags: 64 
         });
       }
     }
 
     // Profile buttons
     if (customId.startsWith("profile_")) {
-      return interaction.reply({ content: "📝 Fitur edit profile segera hadir!", ephemeral: true });
+      return interaction.reply({ content: "📝 Fitur edit profile segera hadir!", flags: 64 });
     }
 
     // Ping refresh
     if (customId === "ping_refresh") {
       const ping = client.ws.ping;
-      return interaction.reply({ content: `📡 Ping: ${ping}ms`, ephemeral: true });
+      return interaction.reply({ content: `📡 Ping: ${ping}ms`, flags: 64 });
     }
 
     // ============================================
@@ -347,7 +367,7 @@ async function handleButtonInteraction(client, interaction) {
     // ============================================
     if (action === "volume") {
       if (!player || !player.current) {
-        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", ephemeral: true });
+        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", flags: 64 });
       }
 
       let newVolume = player.volume || 100;
@@ -369,7 +389,7 @@ async function handleButtonInteraction(client, interaction) {
 
       return interaction.reply({ 
         content: `🔊 Volume: ${newVolume}%`, 
-        ephemeral: true 
+        flags: 64 
       });
     }
 
@@ -378,7 +398,7 @@ async function handleButtonInteraction(client, interaction) {
     // ============================================
     if (action === "music" && type === "autoplay") {
       if (!player) {
-        return interaction.reply({ content: "❌ Tidak ada player aktif.", ephemeral: true });
+        return interaction.reply({ content: "❌ Tidak ada player aktif.", flags: 64 });
       }
 
       const newAutoplay = !player.isAutoplay;
@@ -398,7 +418,7 @@ async function handleButtonInteraction(client, interaction) {
     // ============================================
     if (action === "autoplay" && type === "toggle") {
       if (!player) {
-        return interaction.reply({ content: "❌ Tidak ada player aktif.", ephemeral: true });
+        return interaction.reply({ content: "❌ Tidak ada player aktif.", flags: 64 });
       }
 
       player.isAutoplay = !player.isAutoplay;
@@ -417,12 +437,13 @@ async function handleButtonInteraction(client, interaction) {
     // ============================================
     if (action === "queue") {
       if (!player || !player.current) {
-        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", ephemeral: true });
+        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", flags: 64 });
       }
 
       if (type === "shuffle") {
+        const qArr = Array.from(player.queue || []);
         if (player.queue.length < 2) {
-          return interaction.reply({ content: "❌ Antrian terlalu pendek.", ephemeral: true });
+          return interaction.reply({ content: "❌ Antrian terlalu pendek.", flags: 64 });
         }
         const current = player.queue.shift();
         for (let i = player.queue.length - 1; i > 0; i--) {
@@ -434,12 +455,14 @@ async function handleButtonInteraction(client, interaction) {
       }
 
       if (type === "clear") {
-        player.queue.clear();
+        if (player.queue) {
+          player.queue.clear();
+        }
         return interaction.reply({ content: "🗑️ Antrian dikosongkan!" });
       }
 
       // prev, next, page buttons - handled by command collectors
-      return interaction.reply({ content: "📋 Gunakan command `/queue` untuk melihat antrian.", ephemeral: true });
+      return interaction.reply({ content: "📋 Gunakan command `/queue` untuk melihat antrian.", flags: 64 });
     }
 
     // ============================================
@@ -447,7 +470,7 @@ async function handleButtonInteraction(client, interaction) {
     // ============================================
     if (action === "filter" && type === "clear") {
       if (!player || !player.current) {
-        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", ephemeral: true });
+        return interaction.reply({ content: "❌ Tidak ada musik yang diputar.", flags: 64 });
       }
 
       if (player.filters) {
@@ -471,7 +494,7 @@ async function handleButtonInteraction(client, interaction) {
         }
         return interaction.reply({ content: "👋 Bot telah keluar dari voice channel!" });
       } else if (type === "cancel") {
-        return interaction.reply({ content: "❌ Aksi dibatalkan.", ephemeral: true });
+        return interaction.reply({ content: "❌ Aksi dibatalkan.", flags: 64 });
       }
     }
 
@@ -488,12 +511,12 @@ async function handleButtonInteraction(client, interaction) {
     if (action === "play") {
       // Search results are handled by the play command
       // This requires access to search results stored in memory
-      return interaction.reply({ content: "🔍 Silakan gunakan command `/play` untuk mencari lagu.", ephemeral: true });
+      return interaction.reply({ content: "🔍 Silakan gunakan command `/play` untuk mencari lagu.", flags: 64 });
     }
 
   } catch (error) {
     logger.error(`Button interaction error: ${error.message}`);
-    return interaction.reply({ content: "❌ Terjadi error.", ephemeral: true });
+    return interaction.reply({ content: "❌ Terjadi error.", flags: 64 });
   }
 }
 

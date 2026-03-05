@@ -38,7 +38,7 @@ module.exports = {
     if (!owners.includes(interaction.user.id)) {
       return interaction.reply({
         content: "❌ Kamu tidak memiliki izin untuk menggunakan command ini.",
-        ephemeral: true
+        flags: 64
       });
     }
 

@@ -63,6 +63,7 @@ const globalStatsSchema = new mongoose.Schema({
     title: String,
     artist: String,
     thumbnail: String,
+    uri: String,
     plays: { type: Number, default: 1 }
   }],
   topArtists: [{
@@ -72,11 +73,59 @@ const globalStatsSchema = new mongoose.Schema({
   lastUpdated: { type: Date, default: Date.now }
 });
 
+// Favorite Song Schema
+const favoriteSchema = new mongoose.Schema({
+  userId: { type: String, required: true },
+  tracks: [{
+    title: String,
+    artist: String,
+    uri: String,
+    thumbnail: String,
+    duration: Number,
+    addedAt: { type: Date, default: Date.now }
+  }],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Playlist Schema
+const playlistSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  ownerId: { type: String, required: true },
+  ownerName: { type: String, default: "Unknown" },
+  guildId: { type: String, default: null },
+  isPublic: { type: Boolean, default: false },
+  shareCode: { type: String, unique: true, sparse: true },
+  tracks: [{
+    title: String,
+    artist: String,
+    uri: String,
+    thumbnail: String,
+    duration: Number,
+    addedBy: String,
+    addedAt: { type: Date, default: Date.now }
+  }],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Guild Settings Schema
+const guildSettingsSchema = new mongoose.Schema({
+  guildId: { type: String, required: true, unique: true },
+  djRoleId: { type: String, default: null },
+  autoplay: { type: Boolean, default: false },
+  defaultVolume: { type: Number, default: 100 },
+  prefix: { type: String, default: "!" },
+  language: { type: String, default: "id" },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
 // ============================================
 // MONGODB MODELS
 // ============================================
 
-let Profile, Mode247, ServerStats, GlobalStats;
+let Profile, Mode247, ServerStats, GlobalStats, Favorite, Playlist, GuildSettings;
 let isConnected = false;
 let dbInitialized = false;
 
@@ -105,6 +154,9 @@ async function connectMongoDB(config) {
     Mode247 = mongoose.model("Mode247", mode247Schema);
     ServerStats = mongoose.model("ServerStats", serverStatsSchema);
     GlobalStats = mongoose.model("GlobalStats", globalStatsSchema);
+    Favorite = mongoose.model("Favorite", favoriteSchema);
+    Playlist = mongoose.model("Playlist", playlistSchema);
+    GuildSettings = mongoose.model("GuildSettings", guildSettingsSchema);
 
     isConnected = true;
     console.log(`[DATABASE] ✅ Connected to MongoDB: ${mongoDbName}`);
@@ -313,7 +365,8 @@ async function addListeningTime(userId, seconds) {
  * Get 247 mode for guild
  */
 async function get247Mode(guildId) {
-  if (!isConnected) {
+  // Check connection
+  if (!isConnected || (mongoose.connection.readyState !== 1)) {
     return {
       enabled: false,
       voiceChannelId: null,
@@ -337,6 +390,9 @@ async function get247Mode(guildId) {
     };
   } catch (err) {
     console.error("[DATABASE] Error get247Mode:", err.message);
+    if (err.message.includes("auth")) {
+      isConnected = false;
+    }
     return null;
   }
 }
@@ -398,13 +454,19 @@ async function remove247Mode(guildId) {
  * Get all 247 enabled guilds
  */
 async function getAll247Guilds() {
-  if (!isConnected) return [];
+  // Check connection
+  if (!isConnected || (mongoose.connection.readyState !== 1)) {
+    console.warn("[DATABASE] getAll247Guilds: Not connected, skipping");
+    return [];
+  }
   
   try {
-    const modes = await Mode247.find({ enabled: true });
-    return modes.map(m => ({ guildId: m.guildId, ...m.toObject() }));
+    // Simple query without admin ping to avoid auth issues
+    const modes = await Mode247.find({ enabled: true }).lean();
+    return modes.map(m => ({ guildId: m.guildId, ...m }));
   } catch (err) {
     console.error("[DATABASE] Error getAll247Guilds:", err.message);
+    // Don't reset connection on error - just return empty array
     return [];
   }
 }

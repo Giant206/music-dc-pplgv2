@@ -1,254 +1,240 @@
 /**
- * PPLGBot - Utility: Logger
- * Console logging dengan warna-warna yang konsisten
+ * PPLGBot - Logger Utility
+ * Sistem logging dengan timestamp, level, dan warna
  */
 
-// ANSI color codes
-const Colors = {
-    reset: '\x1b[0m',
-    bright: '\x1b[1m',
-    dim: '\x1b[2m',
-    underscore: '\x1b[4m',
-    blink: '\x1b[5m',
-    reverse: '\x1b[7m',
-    hidden: '\x1b[8m',
-    
-    // Foreground colors
-    fg: {
-        black: '\x1b[30m',
-        red: '\x1b[31m',
-        green: '\x1b[32m',
-        yellow: '\x1b[33m',
-        blue: '\x1b[34m',
-        magenta: '\x1b[35m',
-        cyan: '\x1b[36m',
-        white: '\x1b[37m',
-        gray: '\x1b[90m',
-        crimson: '\x1b[91m'
-    },
-    
-    // Background colors
-    bg: {
-        black: '\x1b[40m',
-        red: '\x1b[41m',
-        green: '\x1b[42m',
-        yellow: '\x1b[43m',
-        blue: '\x1b[44m',
-        magenta: '\x1b[45m',
-        cyan: '\x1b[46m',
-        white: '\x1b[47m',
-        gray: '\x1b[100m'
-    }
+const chalk = require("chalk");
+
+// Log levels
+const LOG_LEVELS = {
+  DEBUG: 0,
+  INFO: 1,
+  WARN: 2,
+  ERROR: 3
 };
 
-// Prefix untuk berbagai tipe log
-const Prefix = {
-    INFO: '[ℹ️ INFO]',
-    SUCCESS: '[✅ SUCCESS]',
-    WARNING: '[⚠️ WARNING]',
-    ERROR: '[❌ ERROR]',
-    DEBUG: '[🔍 DEBUG]',
-    MUSIC: '[🎵 MUSIC]',
-    COMMAND: '[⚡ COMMAND]',
-    EVENT: '[📡 EVENT]',
-    Riffy: '[🔊 RIFFY]',
-    SYSTEM: '[💻 SYSTEM]',
-    LOAD: '[📦 LOAD]'
+// Current log level (default: INFO)
+let currentLevel = LOG_LEVELS.INFO;
+
+// Colors for different log types
+const colors = {
+  debug: chalk.gray,
+  info: chalk.cyan,
+  warn: chalk.yellow,
+  error: chalk.red,
+  success: chalk.green,
+  music: chalk.magenta,
+  queue: chalk.blue,
+  system: chalk.cyan,
+  time: chalk.gray
 };
 
 /**
  * Format timestamp
  */
-function timestamp() {
-    const now = new Date();
-    return now.toLocaleTimeString('id-ID', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit',
-        hour12: false 
-    });
+function formatTimestamp() {
+  const now = new Date();
+  return now.toISOString().replace("T", " ").substring(0, 19);
 }
 
 /**
- * Log info
+ * Set log level
  */
-function info(message, ...args) {
-    console.log(`${Colors.fg.cyan}${Prefix.INFO}${Colors.reset} ${Colors.fg.gray}[${timestamp()}]${Colors.reset} ${message}`, ...args);
+function setLevel(level) {
+  if (typeof level === "string") {
+    currentLevel = LOG_LEVELS[level.toUpperCase()] || LOG_LEVELS.INFO;
+  } else {
+    currentLevel = level;
+  }
 }
 
 /**
- * Log success
+ * Get log level string
  */
-function success(message, ...args) {
-    console.log(`${Colors.fg.green}${Prefix.SUCCESS}${Colors.reset} ${Colors.fg.gray}[${timestamp()}]${Colors.reset} ${message}`, ...args);
+function getLevel() {
+  return Object.keys(LOG_LEVELS).find(key => LOG_LEVELS[key] === currentLevel);
 }
 
 /**
- * Log warning
+ * Debug log
  */
-function warn(message, ...args) {
-    console.warn(`${Colors.fg.yellow}${Prefix.WARNING}${Colors.reset} ${Colors.fg.gray}[${timestamp()}]${Colors.reset} ${message}`, ...args);
+function debug(...args) {
+  if (currentLevel <= LOG_LEVELS.DEBUG) {
+    console.log(colors.debug(`[${formatTimestamp()}] [DEBUG]`), ...args);
+  }
 }
 
 /**
- * Log error
+ * Info log
  */
-function error(message, ...args) {
-    console.error(`${Colors.fg.red}${Prefix.ERROR}${Colors.reset} ${Colors.fg.gray}[${timestamp()}]${Colors.reset} ${message}`, ...args);
+function info(...args) {
+  if (currentLevel <= LOG_LEVELS.INFO) {
+    console.log(colors.info(`[${formatTimestamp()}] [INFO]`), ...args);
+  }
 }
 
 /**
- * Log debug
+ * Warn log
  */
-function debug(message, ...args) {
-    if (process.env.DEBUG === 'true') {
-        console.log(`${Colors.fg.magenta}${Prefix.DEBUG}${Colors.reset} ${Colors.fg.gray}[${timestamp()}]${Colors.reset} ${message}`, ...args);
-    }
+function warn(...args) {
+  if (currentLevel <= LOG_LEVELS.WARN) {
+    console.log(colors.warn(`[${formatTimestamp()}] [WARN]`), ...args);
+  }
 }
 
 /**
- * Log music event
+ * Error log
  */
-function music(message, ...args) {
-    console.log(`${Colors.fg.cyan}${Prefix.MUSIC}${Colors.reset} ${Colors.fg.gray}[${timestamp()}]${Colors.reset} ${message}`, ...args);
-}
-
-
-
-/**
- * Log command - supports both string and multiple parameters
- */
-function command(...args) {
-    // If first arg is a string (could be /command or !command), treat it as the full message
-    if (args[0] && typeof args[0] === 'string') {
-        // Check if it's a slash command or prefix command (starts with /, !, or other prefix)
-        const firstChar = args[0].charAt(0);
-        if (firstChar === '/' || firstChar === '!' || firstChar === '.') {
-            console.log(
-                `${Colors.fg.yellow}${Prefix.COMMAND}${Colors.reset} ` +
-                `${Colors.fg.gray}[${timestamp()}]${Colors.reset} ` +
-                `${args[0]}`
-            );
-            return;
-        }
-    }
-    
-    // Otherwise treat as separate parameters: commandName, user, guild
-    const [commandName, user, guild] = args;
-    console.log(
-        `${Colors.fg.yellow}${Prefix.COMMAND}${Colors.reset} ` +
-        `${Colors.fg.gray}[${timestamp()}]${Colors.reset} ` +
-        `${Colors.fg.green}${commandName}${Colors.reset} ` +
-        `${Colors.fg.gray}by${Colors.reset} ${Colors.fg.cyan}${user}${Colors.reset} ` +
-        (guild ? `${Colors.fg.gray}in${Colors.reset} ${Colors.fg.magenta}${guild}${Colors.reset}` : '')
-    );
-}
-
-
-/**
- * Log event
- */
-function event(eventName, ...args) {
-    console.log(`${Colors.fg.blue}${Prefix.EVENT}${Colors.reset} ${Colors.fg.gray}[${timestamp()}]${Colors.reset} ${Colors.fg.green}${eventName}${Colors.reset}`, ...args);
+function error(...args) {
+  if (currentLevel <= LOG_LEVELS.ERROR) {
+    console.error(colors.error(`[${formatTimestamp()}] [ERROR]`), ...args);
+  }
 }
 
 /**
- * Log riffy event
+ * Success log
  */
-function riffy(message, ...args) {
-    console.log(`${Colors.fg.magenta}${Prefix.Riffy}${Colors.reset} ${Colors.fg.gray}[${timestamp()}]${Colors.reset} ${message}`, ...args);
+function success(...args) {
+  if (currentLevel <= LOG_LEVELS.INFO) {
+    console.log(colors.success(`[${formatTimestamp()}] [SUCCESS]`), ...args);
+  }
 }
 
 /**
- * Log system
+ * Music event log
  */
-function system(message, ...args) {
-    console.log(`${Colors.fg.gray}${Prefix.SYSTEM}${Colors.reset} ${Colors.fg.gray}[${timestamp()}]${Colors.reset} ${message}`, ...args);
+function music(event, ...args) {
+  if (currentLevel <= LOG_LEVELS.INFO) {
+    console.log(colors.music(`[${formatTimestamp()}] [MUSIC:${event}]`), ...args);
+  }
 }
 
 /**
- * Log loading
+ * Queue event log
  */
-function load(message, ...args) {
-    console.log(`${Colors.fg.blue}${Prefix.LOAD}${Colors.reset} ${Colors.fg.gray}[${timestamp()}]${Colors.reset} ${Colors.fg.cyan}${message}${Colors.reset}`, ...args);
+function queue(action, ...args) {
+  if (currentLevel <= LOG_LEVELS.INFO) {
+    console.log(colors.queue(`[${formatTimestamp()}] [QUEUE:${action}]`), ...args);
+  }
 }
 
 /**
- * Log tabel
+ * System log
  */
-function table(data) {
-    console.table(data);
+function system(component, ...args) {
+  if (currentLevel <= LOG_LEVELS.INFO) {
+    console.log(colors.system(`[${formatTimestamp()}] [SYSTEM:${component}]`), ...args);
+  }
 }
 
 /**
- * Log separator
+ * Command log
  */
-function separator() {
-    console.log(Colors.fg.gray + '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━' + Colors.reset);
+function cmd(...args) {
+  if (currentLevel <= LOG_LEVELS.INFO) {
+    console.log(colors.system("CMD"), ...args);
+  }
 }
 
 /**
- * Log box
+ * Riffy event log
  */
-function box(title, message) {
-    const line = '━'.repeat(Math.max(title.length, message.length) + 4);
-    console.log(Colors.fg.gray + '┌' + line + '┐' + Colors.reset);
-    console.log(Colors.fg.gray + '│ ' + Colors.reset + Colors.fg.cyan + title.padEnd(message.length + 2) + Colors.reset + Colors.fg.gray + '│' + Colors.reset);
-    console.log(Colors.fg.gray + '│ ' + Colors.reset + Colors.fg.white + message.padEnd(message.length + 2) + Colors.reset + Colors.fg.gray + '│' + Colors.reset);
-    console.log(Colors.fg.gray + '└' + line + '┘' + Colors.reset);
+function riffy(event, ...args) {
+  if (currentLevel <= LOG_LEVELS.INFO) {
+    console.log(colors.system(`[${formatTimestamp()}] [RIFFY:${event}]`), ...args);
+  }
 }
 
 /**
- * Startup banner
+ * Log music start event
  */
-function banner() {
-    console.log(Colors.fg.cyan + `
-    ╔═══════════════════════════════════════════════════╗
-    ║                                                   ║
-    ║   ${Colors.fg.white}PPLGBot - Sistem Musik Modern${Colors.reset}${Colors.fg.cyan}                  ║
-    ║   ${Colors.fg.gray}Versi: 2.0.0 | Discord.js v14${Colors.reset}${Colors.fg.cyan}                 ║
-    ║                                                   ║
-    ║   ${Colors.fg.green}✓ Loading modules...${Colors.reset}${Colors.fg.cyan}                            ║
-    ╚═══════════════════════════════════════════════════╝
-    ` + Colors.reset);
+function logMusicStart(track, guildName) {
+  music("START", colors.green("🎵 Music started:"), track.title, "by", track.author, "| Guild:", guildName);
 }
 
 /**
- * Success banner saat bot siap
+ * Log music end event
  */
-function ready(botName, tag) {
-    console.log(Colors.fg.green + `
-    ╔═══════════════════════════════════════════════════╗
-    ║                                                   ║
-    ║   ${Colors.fg.white}✓ ${botName} Berhasil Diaktifkan!${Colors.reset}${Colors.fg.green}               ║
-    ║   ${Colors.fg.gray}User: ${tag}${Colors.reset}${Colors.fg.green}                      ║
-    ║   ${Colors.fg.gray}Waktu: ${timestamp()}${Colors.reset}${Colors.fg.green}                          ║
-    ║                                                   ║
-    ║   ${Colors.fg.cyan}Siap menerima perintah!${Colors.reset}${Colors.fg.green}                       ║
-    ╚═══════════════════════════════════════════════════╝
-    ` + Colors.reset);
+function logMusicEnd(track, guildName) {
+  music("END", colors.gray("⏹️ Music ended:"), track.title, "| Guild:", guildName);
+}
+
+/**
+ * Log queue add
+ */
+function logQueueAdd(track, position, guildName) {
+  queue("ADD", colors.blue("➕ Added to queue:"), track.title, "| Position:", position, "| Guild:", guildName);
+}
+
+/**
+ * Log queue remove
+ */
+function logQueueRemove(track, position, guildName) {
+  queue("REMOVE", colors.yellow("➖ Removed from queue:"), track.title, "| Position:", position, "| Guild:", guildName);
+}
+
+/**
+ * Log Lavalink reconnect
+ */
+function logLavalinkReconnect(nodeName, attempt) {
+  system("LAVALINK", colors.cyan("🔄 Reconnecting to node:"), nodeName, "| Attempt:", attempt);
+}
+
+/**
+ * Log error with stack
+ */
+function logErrorStack(err, context) {
+  error(colors.red("❌ Error occurred:"), context || "Unknown context");
+  if (err && err.stack) {
+    console.error(colors.gray(err.stack));
+  }
+}
+
+/**
+ * Create logger for specific module
+ */
+function createLogger(moduleName) {
+  return {
+    debug: (...args) => debug(`[${moduleName}]`, ...args),
+    info: (...args) => info(`[${moduleName}]`, ...args),
+    warn: (...args) => warn(`[${moduleName}]`, ...args),
+    error: (...args) => error(`[${moduleName}]`, ...args),
+    success: (...args) => success(`[${moduleName}]`, ...args),
+    music: (event, ...args) => music(event, `[${moduleName}]`, ...args),
+    queue: (action, ...args) => queue(action, `[${moduleName}]`, ...args),
+    system: (component, ...args) => system(component, `[${moduleName}]`, ...args),
+    cmd: (...args) => cmd(`[${moduleName}]`, ...args)
+  };
 }
 
 module.exports = {
-    Colors,
-    Prefix,
-    timestamp,
-    info,
-    success,
-    warn,
-    error,
-    debug,
-    music,
-    command,
-    cmd: command, // Alias untuk command
-    event,
-    riffy,
-    system,
-    load,
-    table,
-    separator,
-    box,
-    banner,
-    ready
+  setLevel,
+  getLevel,
+  debug,
+  info,
+  warn, 
+  error,
+  success,
+  music,
+  queue,
+  system,
+  cmd,
+  riffy,
+  logMusicStart,
+  logMusicEnd,
+  logQueueAdd,
+  logQueueRemove,
+  logLavalinkReconnect,
+  logErrorStack,
+  createLogger,
+  LOG_LEVELS
 };
+
+/**
+ * PPLGBot - Logger Utility
+ * Usage: const logger = require('./utils/logger');
+ * logger.info('Hello world');
+ * logger.music('START', 'Playing song');
+ * const myLogger = logger.createLogger('MyModule');
+ */
 

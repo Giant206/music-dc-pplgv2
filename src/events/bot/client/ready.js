@@ -47,13 +47,35 @@ module.exports = (client) => {
     setInterval(rotateStatus, 30 * 1000);
 
     // ============================================
-    // 🎧 247 MODE AUTO-RECONNECT
+    // 🎧 247 MODE AUTO-RECONNECT (Non-blocking)
     // ============================================
-    try {
-      await setup247Mode(client);
-    } catch (err) {
-      logger.error(`❌ Error setup 247 mode: ${err.message}`);
-    }
+    
+    // Wait for database to be ready before setting up 247 mode
+    const waitForDatabase = async () => {
+      let attempts = 0;
+      const maxAttempts = 10; // Wait up to 10 seconds max
+      
+      while (!db.isMongoConnected() && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        attempts++;
+      }
+      
+      if (db.isMongoConnected()) {
+        try {
+          await setup247Mode(client);
+        } catch (err) {
+          logger.warn(`⚠️ 247 mode setup failed: ${err.message}`);
+        }
+      } else {
+        logger.warn("⚠️ 247 mode setup skipped - MongoDB not connected");
+      }
+    };
+    
+    // Start 247 mode setup after a delay (non-blocking)
+    // Use setImmediate to let the current execution finish first
+    setImmediate(() => {
+      setTimeout(waitForDatabase, 3000);
+    });
 
     // ============================================
     // ⏰ TIMED TASKS

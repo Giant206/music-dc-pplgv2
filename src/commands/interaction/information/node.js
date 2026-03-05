@@ -163,7 +163,7 @@ module.exports = {
         if (buttonInteraction.user.id !== interaction.user.id) {
           return buttonInteraction.reply({
             content: "Anda tidak dapat menggunakan tombol ini.",
-            ephemeral: true
+            flags: 64
           });
         }
 

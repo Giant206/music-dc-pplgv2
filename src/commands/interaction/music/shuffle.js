@@ -50,7 +50,8 @@ module.exports = {
     // ============================================
     // ❌ CHECK QUEUE
     // ============================================
-    if (player.queue.length < 2) {
+    const queueArray = Array.from(player.queue || []);
+    if (queueArray.length < 2) {
       const embed = new ContainerBuilder()
         .setAccentColor(0xf59e0b)
         .addTextDisplayComponents(
