@@ -10,7 +10,9 @@
   "dependencies": {
     "discord.js": "^14.21.0",
     "dotenv": "^17.3.1",
-    "genius-lyrics-api": "^3.2.1",
+    "lyrics-finder": "^21.0.0",
+    "mongodb": "^7.1.0",
+    "mongoose": "^9.2.4",
     "pretty-ms": "^9.2.0",
     "riffy": "^1.0.12"
   },
@@ -25,4 +27,3 @@
   "author": "PPLGBot Team",
   "license": "MIT"
 }
-

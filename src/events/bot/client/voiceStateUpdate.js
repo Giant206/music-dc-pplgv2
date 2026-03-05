@@ -12,10 +12,10 @@ const leaveTimers = new Map();
 module.exports = (client) => {
   client.on('voiceStateUpdate', async (oldState, newState) => {
     const player = client.riffy?.players?.get(oldState.guild.id);
-    const mode247 = db.get247Mode(oldState.guild.id);
+    const mode247 = await db.get247Mode(oldState.guild.id);
     
     // Skip if 247 mode is enabled - bot stays in channel
-    if (mode247.enabled) {
+    if (mode247 && mode247.enabled) {
       // Still handle auto-resume when someone joins
       const newBotChannel = newState.guild.members.me?.voice.channel;
       if (newBotChannel && newState.channelId === newBotChannel.id) {

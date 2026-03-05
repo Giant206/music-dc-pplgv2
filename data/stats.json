@@ -1,0 +1,10 @@
+{
+  "global": {
+    "totalListening": 0,
+    "totalTracksPlayed": 0,
+    "totalServers": 0,
+    "topTracks": [],
+    "topArtists": [],
+    "lastUpdated": null
+  }
+}

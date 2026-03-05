@@ -26,8 +26,14 @@ client.aliases = new Collection();
 client.slashCommands = new Collection();
 client.cooldowns = new Collection();
 
-// Initialize database
-db.initDatabase();
+// Initialize database (MongoDB)
+db.initDatabase(client.config).then(success => {
+    if (success) {
+        console.log("[BOT] ✅ Database initialized successfully");
+    } else {
+        console.warn("[BOT] ⚠️ Database initialization failed - data will not persist!");
+    }
+});
 
 client.riffy = new Riffy(client, client.config.nodes, {
     send: (payload) => {

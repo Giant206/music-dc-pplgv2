@@ -52,9 +52,13 @@ module.exports = {
     // Toggle autoplay
     player.isAutoplay = !player.isAutoplay;
 
-    // Call autoplay function if enabled
+    // Try to call autoplay function if enabled (riffy v3+)
     if (player.isAutoplay && typeof player.autoplay === "function") {
-      player.autoplay(player);
+      try {
+        player.autoplay(player);
+      } catch (e) {
+        console.log("[Autoplay] autoplay() not available in this version");
+      }
     }
 
     // Create embed

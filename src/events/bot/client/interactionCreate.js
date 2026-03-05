@@ -316,16 +316,16 @@ async function handleButtonInteraction(client, interaction) {
     // 247 Mode buttons
     if (customId.startsWith("247_")) {
       const guildId = interaction.guild.id;
-      const mode247 = db.get247Mode(guildId);
+      const mode247 = await db.get247Mode(guildId);
       
       if (customId === "247_off") {
-        db.set247Mode(guildId, { enabled: false });
+        await db.set247Mode(guildId, { enabled: false });
         return interaction.reply({ content: "⏹️ Mode 247 dinonaktifkan!", ephemeral: true });
       }
       
       if (customId === "247_status") {
         return interaction.reply({ 
-          content: mode247.enabled ? "✅ Mode 247 AKTIF" : "❌ Mode 247 NONAKTIF", 
+          content: mode247 && mode247.enabled ? "✅ Mode 247 AKTIF" : "❌ Mode 247 NONAKTIF", 
           ephemeral: true 
         });
       }

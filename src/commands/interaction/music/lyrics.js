@@ -13,7 +13,7 @@ const {
   ButtonBuilder,
   ButtonStyle
 } = require("discord.js");
-const { getLyrics } = require("genius-lyrics-api");
+const lyricsFinder = require("lyrics-finder");
 
 // Chunk lyrics into pages
 function chunkLyrics(text, linesPerChunk = 6) {
@@ -68,37 +68,13 @@ module.exports = {
 
     const track = player.current;
 
-    // Check for genius token
-    if (!client.config.geniusToken) {
-      const noToken = new ContainerBuilder()
-        .setAccentColor(0xf59e0b)
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent("### ⚠️ Token Tidak Ditemukan")
-        )
-        .addSeparatorComponents(
-          new SeparatorBuilder()
-            .setDivider(true)
-            .setSpacing(SeparatorSpacingSize.Small)
-        )
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            "Token Genius tidak dikonfigurasi.\n" +
-            "Tambahkan geniusToken di config.js untuk menggunakan fitur lirik."
-          )
-        );
-
-      return interaction.editReply({
-        components: [noToken]
-      });
+    // Fetch lyrics using lyrics-finder (no API key needed)
+    let lyrics = null;
+    try {
+      lyrics = await lyricsFinder(track.info.author, track.info.title);
+    } catch (e) {
+      lyrics = null;
     }
-
-    // Fetch lyrics
-    const lyrics = await getLyrics({
-      apiKey: client.config.geniusToken,
-      title: track.info.title,
-      artist: track.info.author,
-      optimizeQuery: true
-    });
 
     // ============================================
     // ❌ LYRICS NOT FOUND
@@ -146,17 +122,13 @@ module.exports = {
         );
 
     // Send initial message
-    const message = await interaction.editReply({
+    await interaction.editReply({
       components: [createContainer(chunks[index])]
     });
-
-    // Auto-update lyrics based on song position (optional feature)
-    // For now, just display the lyrics
   }
 };
 
 /**
  * PPLGBot - Sistem Musik Modern
  */
-
 

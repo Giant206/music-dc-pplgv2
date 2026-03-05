@@ -25,8 +25,8 @@ module.exports = {
     const channel = client.channels.cache.get(player.textChannel);
     
     // Check 247 mode - if enabled, don't destroy player
-    const mode247 = db.get247Mode(player.guildId);
-    if (mode247.enabled) {
+    const mode247 = await db.get247Mode(player.guildId);
+    if (mode247 && mode247.enabled) {
       // Bot stays connected in 247 mode
       if (channel) {
         const container = new ContainerBuilder()

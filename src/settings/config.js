@@ -7,7 +7,7 @@ module.exports = {
     // ============================================
     // 🔐 BOT IDENTIFICATION
     // ============================================
-    clientid: "", // Client ID dari Discord Developer Portal
+    clientid: "1472615345402544138", // Client ID dari Discord Developer Portal
 
     // 🎨 APPEARANCE
     // ============================================
@@ -24,8 +24,8 @@ module.exports = {
     // ============================================
     // 👑 OWNER SETTINGS
     // ============================================
-    developers: [], // Array ID user yang bisa akses developer commands
-    owners: [], // Array ID user yang punya akses penuh ke bot
+    developers: [1186985440759267351], // Array ID user yang bisa akses developer commands
+    owners: [1186985440759267351], // Array ID user yang punya akses penuh ke bot
     
     // ============================================
     // 🎵 LAVALINK NODES
@@ -43,13 +43,13 @@ module.exports = {
     // ============================================
     // 🎤 LYRICS SETTINGS
     // ============================================
-    geniusToken: "", // Token Genius untuk lyrics command (opsional)
+    geniusToken: "mwxSK0g5kbQ47uV64C8QHgSy5Hd6X3iK515Q9Aoi3ajja867s9FOuHjcOOIWnVgy", // Token Genius untuk lyrics command (opsional)
     
     // ============================================
     // ⚙️ DEVELOPMENT MODE
     // ============================================
     devMode: false, // Jika true, commands hanya register ke dev guild
-    devGuildId: "", // Guild ID untuk development mode
+    devGuildId: "1478292959123210333", // Guild ID untuk development mode
     
     // ============================================
     // 🎛️ MUSIC SETTINGS
@@ -61,6 +61,12 @@ module.exports = {
     // ⏰ AUTO DISCONNECT
     // ============================================
     autoDisconnectTimeout: 60000, // Timeout disconnect dalam ms (default 1 menit)
+
+    // ============================================
+    // 🗄️ MONGODB SETTINGS
+    // ============================================
+    mongoUri: process.env.MONGODB_URI || "mongodb+srv://giantest:giantest@giandatabase.60zyiyh.mongodb.net/", // MongoDB connection string (use env var for security)
+    mongoDatabase: "PPLGBot", // Nama database
 };
 
 /**

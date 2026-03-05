@@ -53,8 +53,12 @@ module.exports = {
     // Store the track info before skipping
     const skippedTrack = player.current.info.title;
 
-    // Skip the track
-    player.stop();
+    // Skip the track - use skip() method for riffy
+    if (player.queue.length > 0) {
+      player.skip();
+    } else {
+      player.stop();
+    }
 
     // Create success embed
     const skipped = new ContainerBuilder()

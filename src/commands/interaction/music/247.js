@@ -41,7 +41,7 @@ module.exports = {
     const mode = interaction.options?.getString("mode");
     
     // Get current 247 settings
-    const currentSettings = db.get247Mode(guildId);
+    const currentSettings = await db.get247Mode(guildId);
     
     // ============================================
     // ❌ CHECK VOICE CHANNEL
@@ -89,7 +89,7 @@ module.exports = {
       const player = client.riffy.players.get(guildId);
       
       // Save 247 settings
-      db.set247Mode(guildId, {
+      await db.set247Mode(guildId, {
         enabled: true,
         voiceChannelId: voiceChannel.id,
         textChannelId: interaction.channel.id,
@@ -138,7 +138,7 @@ module.exports = {
 
     } else {
       // Disable 247 mode
-      db.set247Mode(guildId, { enabled: false });
+      await db.set247Mode(guildId, { enabled: false });
 
       const disabledEmbed = new ContainerBuilder()
         .setAccentColor(0xef4444)

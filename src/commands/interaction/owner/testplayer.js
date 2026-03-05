@@ -152,11 +152,12 @@ module.exports = {
 
       case "info":
         const nodeInfo = Array.from(client.riffy.nodes.values()).map(node => {
+          const memUsed = node.stats?.memory?.used || 0;
           return `**Node: ${node.name}**\n` +
             `• Connected: ${node.isConnected}\n` +
             `• Players: ${node.stats?.players || 0}\n` +
             `• Playing: ${node.stats?.playingPlayers || 0}\n` +
-            `• Memory: ${Math.round(node.stats?.memory?.used || 0 / 1024 / 1024)}MB`;
+            `• Memory: ${Math.round(memUsed / 1024 / 1024)}MB`;
         }).join("\n\n");
 
         const infoContainer = new ContainerBuilder()

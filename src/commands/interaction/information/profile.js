@@ -45,11 +45,11 @@ module.exports = {
 
   run: async (client, interaction) => {
     const targetUser = interaction.options?.getUser("user") || interaction.user;
-    const profile = db.getProfile(targetUser.id);
+    const profile = await db.getProfile(targetUser.id);
     
     // Update username
     if (profile.username !== targetUser.username) {
-      db.saveProfile(targetUser.id, { username: targetUser.username });
+      await db.saveProfile(targetUser.id, { username: targetUser.username });
     }
 
     // Calculate level

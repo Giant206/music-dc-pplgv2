@@ -22,18 +22,45 @@ module.exports = {
   description: "Menampilkan semua command yang tersedia",
 
   run: async (client, interaction) => {
-    // Get all commands
-    const commandsPath = path.join(__dirname);
-    const commandFiles = fs.readdirSync(commandsPath)
-      .filter(file => file.endsWith(".js"));
-
-    const commands = commandFiles.map(file => {
-      const cmd = require(path.join(commandsPath, file));
-      return {
-        name: cmd.name,
-        description: cmd.description || "Tidak ada deskripsi"
-      };
-    });
+    // Get all commands from music and information directories
+    const musicPath = path.join(__dirname, "../music");
+    const infoPath = path.join(__dirname, "../information");
+    
+    const commands = [];
+    
+    // Load from music directory
+    if (fs.existsSync(musicPath)) {
+      const musicDir = fs.readdirSync(musicPath).filter(file => file.endsWith(".js"));
+      for (const file of musicDir) {
+        try {
+          const cmd = require(path.join(musicPath, file));
+          commands.push({
+            name: cmd.name,
+            description: cmd.description || "Tidak ada deskripsi",
+            category: "Music"
+          });
+        } catch (e) {
+          // Skip invalid files
+        }
+      }
+    }
+    
+    // Load from information directory
+    if (fs.existsSync(infoPath)) {
+      const infoDir = fs.readdirSync(infoPath).filter(file => file.endsWith(".js"));
+      for (const file of infoDir) {
+        try {
+          const cmd = require(path.join(infoPath, file));
+          commands.push({
+            name: cmd.name,
+            description: cmd.description || "Tidak ada deskripsi",
+            category: "Information"
+          });
+        } catch (e) {
+          // Skip invalid files
+        }
+      }
+    }
 
     // Create select menu
     const selectMenu = new StringSelectMenuBuilder()

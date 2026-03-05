@@ -98,56 +98,117 @@ module.exports = {
     
     if (player.filters.bassboost) {
       filters.push("bassboost");
-      // Apply bassboost filter
-      player.setFilter("bassboost", {
-        equalizer: [
-          { band: 0, gain: 0.2 },
-          { band: 1, gain: 0.3 },
-          { band: 2, gain: 0.3 },
-          { band: 3, gain: 0.4 },
-          { band: 4, gain: 0.4 },
-          { band: 5, gain: 0.3 },
-          { band: 6, gain: 0.2 },
-          { band: 7, gain: 0.2 },
-          { band: 8, gain: 0.15 },
-          { band: 9, gain: 0.1 }
-        ]
-      });
+      // Apply bassboost filter - try with setFilters for riffy v3
+      try {
+        if (typeof player.setFilters === "function") {
+          player.setFilters({
+            equalizer: [
+              { band: 0, gain: 0.2 },
+              { band: 1, gain: 0.3 },
+              { band: 2, gain: 0.3 },
+              { band: 3, gain: 0.4 },
+              { band: 4, gain: 0.4 },
+              { band: 5, gain: 0.3 },
+              { band: 6, gain: 0.2 },
+              { band: 7, gain: 0.2 },
+              { band: 8, gain: 0.15 },
+              { band: 9, gain: 0.1 }
+            ]
+          });
+        } else if (typeof player.setFilter === "function") {
+          player.setFilter("bassboost", {
+            equalizer: [
+              { band: 0, gain: 0.2 },
+              { band: 1, gain: 0.3 },
+              { band: 2, gain: 0.3 },
+              { band: 3, gain: 0.4 },
+              { band: 4, gain: 0.4 },
+              { band: 5, gain: 0.3 },
+              { band: 6, gain: 0.2 },
+              { band: 7, gain: 0.2 },
+              { band: 8, gain: 0.15 },
+              { band: 9, gain: 0.1 }
+            ]
+          });
+        }
+      } catch (e) {
+        console.log("[Filter] bassboost not supported");
+      }
     }
     
     if (player.filters.nightcore) {
       filters.push("nightcore");
       // Nightcore is typically playback speed + pitch
-      player.setFilter("nightcore", {
-        timescale: {
-          speed: 1.1,
-          pitch: 1.1,
-          rate: 1.1
+      try {
+        if (typeof player.setFilters === "function") {
+          player.setFilters({
+            timescale: {
+              speed: 1.1,
+              pitch: 1.1,
+              rate: 1.1
+            }
+          });
+        } else if (typeof player.setFilter === "function") {
+          player.setFilter("nightcore", {
+            timescale: {
+              speed: 1.1,
+              pitch: 1.1,
+              rate: 1.1
+            }
+          });
         }
-      });
+      } catch (e) {
+        console.log("[Filter] nightcore not supported");
+      }
     }
     
     if (player.filters.vaporwave) {
       filters.push("vaporwave");
-      player.setFilter("vaporwave", {
-        equalizer: [
-          { band: 0, gain: 0.3 },
-          { band: 1, gain: 0 },
-          { band: 2, gain: 0 },
-          { band: 3, gain: 0 },
-          { band: 4, gain: 0 },
-          { band: 5, gain: -0.25 },
-          { band: 6, gain: -0.25 },
-          { band: 7, gain: 0 },
-          { band: 8, gain: 0.25 },
-          { band: 9, gain: 0.25 }
-        ],
-        timescale: {
-          speed: 0.95,
-          pitch: 0.95,
-          rate: 1
+      try {
+        if (typeof player.setFilters === "function") {
+          player.setFilters({
+            equalizer: [
+              { band: 0, gain: 0.3 },
+              { band: 1, gain: 0 },
+              { band: 2, gain: 0 },
+              { band: 3, gain: 0 },
+              { band: 4, gain: 0 },
+              { band: 5, gain: -0.25 },
+              { band: 6, gain: -0.25 },
+              { band: 7, gain: 0 },
+              { band: 8, gain: 0.25 },
+              { band: 9, gain: 0.25 }
+            ],
+            timescale: {
+              speed: 0.95,
+              pitch: 0.95,
+              rate: 1
+            }
+          });
+        } else if (typeof player.setFilter === "function") {
+          player.setFilter("vaporwave", {
+            equalizer: [
+              { band: 0, gain: 0.3 },
+              { band: 1, gain: 0 },
+              { band: 2, gain: 0 },
+              { band: 3, gain: 0 },
+              { band: 4, gain: 0 },
+              { band: 5, gain: -0.25 },
+              { band: 6, gain: -0.25 },
+              { band: 7, gain: 0 },
+              { band: 8, gain: 0.25 },
+              { band: 9, gain: 0.25 }
+            ],
+            timescale: {
+              speed: 0.95,
+              pitch: 0.95,
+              rate: 1
+            }
+          });
         }
-      });
+      } catch (e) {
+        console.log("[Filter] vaporwave not supported");
+      }
     }
 
     // Build active filters text
