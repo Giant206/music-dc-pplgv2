@@ -40,6 +40,9 @@ module.exports = {
     const voiceChannel = interaction.member.voice?.channel;
     const mode = interaction.options?.getString("mode");
     
+    // Defer the interaction to prevent timeout (Discord has 3 second limit)
+    await interaction.deferReply({ ephemeral: false });
+    
     // Get current 247 settings
     const currentSettings = await db.get247Mode(guildId);
     
@@ -63,7 +66,7 @@ module.exports = {
           )
         );
 
-      return interaction.reply({
+      return interaction.editReply({
         components: [notInVC],
         flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
       });
@@ -131,7 +134,7 @@ module.exports = {
             .setStyle(ButtonStyle.Secondary)
         );
 
-      return interaction.reply({
+      return interaction.editReply({
         components: [enabledEmbed, buttons],
         flags: MessageFlags.IsComponentsV2
       });
@@ -157,7 +160,7 @@ module.exports = {
           )
         );
 
-      return interaction.reply({
+      return interaction.editReply({
         components: [disabledEmbed],
         flags: MessageFlags.IsComponentsV2
       });

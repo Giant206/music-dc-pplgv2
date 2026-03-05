@@ -40,7 +40,7 @@ module.exports = (client) => {
     // ============================================
     if (oldBotChannel && oldState.channelId === oldBotChannel.id) {
       const members = oldBotChannel.members.filter(m => !m.user.bot);
-      if (members.size === 0 && !player.paused) {
+      if (members.size === 0 && player && !player.paused) {
         player.pause(true);
         
         const textChannel = client.channels.cache.get(player.textChannel);
@@ -108,7 +108,7 @@ module.exports = (client) => {
     // ============================================
     if (newBotChannel && newState.channelId === newBotChannel.id) {
       const members = newBotChannel.members.filter(m => !m.user.bot);
-      if (members.size > 0 && player.paused) {
+      if (player && members.size > 0 && player.paused) {
         if (leaveTimers.has(newState.guild.id)) {
           clearTimeout(leaveTimers.get(newState.guild.id));
           leaveTimers.delete(newState.guild.id);
@@ -149,6 +149,8 @@ module.exports = (client) => {
       if (!oldState.channelId) return;
 
       if (oldState.serverMute !== newState.serverMute) {
+        if (!player) return;
+        
         const textChannel = client.channels.cache.get(player.textChannel);
         if (!textChannel) return;
 

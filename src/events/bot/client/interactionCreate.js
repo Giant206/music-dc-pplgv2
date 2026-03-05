@@ -336,17 +336,24 @@ async function handleButtonInteraction(client, interaction) {
     // 247 Mode buttons
     if (customId.startsWith("247_")) {
       const guildId = interaction.guild.id;
-      const mode247 = await db.get247Mode(guildId);
+      
+      // Check if already deferred/replied to prevent "Interaction has already been acknowledged" error
+      if (interaction.deferred || interaction.replied) {
+        return;
+      }
+      
+      // Defer the interaction to prevent timeout (Discord has 3 second limit)
+      await interaction.deferReply({ ephemeral: true });
       
       if (customId === "247_off") {
         await db.set247Mode(guildId, { enabled: false });
-        return interaction.reply({ content: "⏹️ Mode 247 dinonaktifkan!", flags: 64 });
+        return interaction.editReply({ content: "⏹️ Mode 247 dinonaktifkan!" });
       }
       
       if (customId === "247_status") {
-        return interaction.reply({ 
-          content: mode247 && mode247.enabled ? "✅ Mode 247 AKTIF" : "❌ Mode 247 NONAKTIF", 
-          flags: 64 
+        const mode247 = await db.get247Mode(guildId);
+        return interaction.editReply({ 
+          content: mode247 && mode247.enabled ? "✅ Mode 247 AKTIF" : "❌ Mode 247 NONAKTIF" 
         });
       }
     }
