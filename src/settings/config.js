@@ -7,7 +7,7 @@ module.exports = {
     // ============================================
     // 🔐 BOT IDENTIFICATION
     // ============================================
-    clientid: "1472615345402544138", // Client ID dari Discord Developer Portal
+    clientid: "", // Client ID dari Discord Developer Portal
 
     // 🎨 APPEARANCE
     // ============================================
@@ -43,7 +43,7 @@ module.exports = {
     // ============================================
     // 🎤 LYRICS SETTINGS
     // ============================================
-    geniusToken: "mwxSK0g5kbQ47uV64C8QHgSy5Hd6X3iK515Q9Aoi3ajja867s9FOuHjcOOIWnVgy", // Token Genius untuk lyrics command (opsional)
+    geniusToken: process.env.GENIUS_TOKEN || "", // Token Genius untuk lyrics command (opsional)
     
     // ============================================
     // ⚙️ DEVELOPMENT MODE
